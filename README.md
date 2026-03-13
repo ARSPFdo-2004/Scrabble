@@ -1,5 +1,42 @@
 # Scrabble – Hardware-Assisted Score Automation
 
+## Quick Start (no hardware required)
+
+> **Requirements:** Python 3.8 or newer.
+
+```bash
+# 1. Clone and enter the repo
+git clone https://github.com/ARSPFdo-2004/Scrabble.git
+cd Scrabble
+
+# 2. Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+
+# 3. Install Python dependencies
+pip install -r backend/requirements.txt
+
+# 4. Create the environment file (simulation mode is on by default)
+cp backend/.env.example backend/.env
+
+# 5. Start the web server
+cd backend
+python app.py
+```
+
+Then open **http://localhost:5000** in your browser to play.  
+All hardware (camera, plotter, Arduino, ESP32) is simulated automatically
+because `SIMULATE=true` is the default in `.env.example`.
+
+To run the test suite:
+
+```bash
+pip install pytest          # one-time
+python -m pytest tests/ -v
+```
+
+---
+
 A full-stack system for a two-player Scrabble game where:
 
 - **Human player** places tiles on a physical board
