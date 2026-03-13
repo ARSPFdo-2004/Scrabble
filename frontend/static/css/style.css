@@ -278,6 +278,26 @@ textarea:focus, input[type="text"]:focus {
 .challenge-result.success { color: #27ae60; }
 .challenge-result.fail    { color: #e74c3c; }
 
+/* ── Exchange rack ───────────────────────────────────────── */
+.exchange-rack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 0.6rem;
+  min-height: 36px;
+}
+.exchange-tile {
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.exchange-tile:hover { opacity: 0.85; }
+.exchange-tile.selected {
+  background: #e74c3c;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(231,76,60,0.5);
+  transform: scale(1.1);
+}
+
 /* ── History table ────────────────────────────────────────── */
 .history-panel {
   background: #16213e;

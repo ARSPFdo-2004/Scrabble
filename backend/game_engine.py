@@ -392,6 +392,7 @@ class GameEngine:
             "game_over": self.game_over,
             "move_history": self.move_history[-10:],  # last 10 moves
             "last_placed_word": self.last_placed_word,
+            "last_placed_tiles": [list(t) for t in self.last_placed_tiles],
             "board_layout": BOARD_LAYOUT,
         }
 
