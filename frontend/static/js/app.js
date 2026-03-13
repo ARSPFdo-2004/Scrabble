@@ -34,7 +34,7 @@ const MULTIPLIER_LABELS = { TW: 'TW', DW: 'DW', TL: 'TL', DL: 'DL' };
 let currentState   = null;
 let selectedWord   = null;
 let prevBoard      = null;
-let exchangeSelected = [];
+let exchangeSelected = new Map();
 
 /* ── Build board DOM (once) ─────────────────────────────── */
 function buildBoard() {
@@ -258,7 +258,7 @@ socket.on('tile_cart_status', data => {
 function renderExchangeRack(tiles) {
   const container = el('exchangeRack');
   container.innerHTML = '';
-  exchangeSelected = [];
+  exchangeSelected = new Map();  // index → letter
   (tiles || []).forEach((letter, idx) => {
     const t = document.createElement('span');
     t.classList.add('tile', 'exchange-tile');
@@ -267,10 +267,9 @@ function renderExchangeRack(tiles) {
     t.onclick = () => {
       t.classList.toggle('selected');
       if (t.classList.contains('selected')) {
-        exchangeSelected.push(letter);
+        exchangeSelected.set(idx, letter);
       } else {
-        const i = exchangeSelected.indexOf(letter);
-        if (i !== -1) exchangeSelected.splice(i, 1);
+        exchangeSelected.delete(idx);
       }
     };
     container.appendChild(t);
@@ -299,11 +298,11 @@ function passTurn() {
 }
 
 function exchangeTiles() {
-  if (!exchangeSelected.length) { alert('Select tiles to exchange first.'); return; }
+  if (!exchangeSelected.size) { alert('Select tiles to exchange first.'); return; }
   fetch('/api/exchange', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ letters: exchangeSelected }),
+    body: JSON.stringify({ letters: Array.from(exchangeSelected.values()) }),
   })
     .then(r => r.json())
     .then(result => {

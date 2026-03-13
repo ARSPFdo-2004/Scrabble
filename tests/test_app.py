@@ -209,7 +209,13 @@ class TestApiNewGame:
 
 class TestApiScanBoard:
     def test_scan_board_in_simulate_mode(self, client):
-        """In simulate mode, camera isn't available so scan should fail."""
+        """In simulate mode, camera isn't available so scan returns board or error."""
         resp = client.post("/api/scan_board")
-        # Expect failure or 500 since no camera in test env
-        assert resp.status_code in (200, 500)
+        data = resp.get_json()
+        if resp.status_code == 200:
+            assert data["success"] is True
+            assert "board" in data
+        else:
+            assert resp.status_code == 500
+            assert data["success"] is False
+            assert "error" in data
