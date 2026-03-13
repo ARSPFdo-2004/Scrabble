@@ -256,7 +256,8 @@ class TestGetState:
         game = make_game()
         state = game.get_state()
         for key in ("board", "scores", "racks", "current_player",
-                    "tiles_remaining", "game_over", "move_history"):
+                    "tiles_remaining", "game_over", "move_history",
+                    "last_placed_tiles"):
             assert key in state
 
     def test_ai_rack_hidden(self):
@@ -264,3 +265,17 @@ class TestGetState:
         state = game.get_state()
         # AI rack should be '??...?' not actual letters
         assert all(c == '?' for c in state["racks"]["ai"])
+
+    def test_last_placed_tiles_initially_empty(self):
+        game = make_game()
+        state = game.get_state()
+        assert state["last_placed_tiles"] == []
+
+    def test_last_placed_tiles_after_move(self):
+        game = make_game()
+        force_rack(game, PLAYER_HUMAN, list("CATXYZW"))
+        tiles = [(CENTER, CENTER, "C"), (CENTER, CENTER + 1, "A"), (CENTER, CENTER + 2, "T")]
+        game.place_tiles(PLAYER_HUMAN, tiles)
+        state = game.get_state()
+        assert len(state["last_placed_tiles"]) == 3
+        assert state["last_placed_tiles"][0] == [CENTER, CENTER, "C"]

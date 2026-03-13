@@ -31,9 +31,10 @@ const BOARD_LAYOUT = [
 
 const MULTIPLIER_LABELS = { TW: 'TW', DW: 'DW', TL: 'TL', DL: 'DL' };
 
-let currentState = null;
-let selectedWord  = null;
-let prevBoard     = null;
+let currentState   = null;
+let selectedWord   = null;
+let prevBoard      = null;
+let exchangeSelected = new Map();
 
 /* ── Build board DOM (once) ─────────────────────────────── */
 function buildBoard() {
@@ -113,15 +114,31 @@ function renderHistory(history) {
   const tbody = el('historyBody');
   tbody.innerHTML = '';
   (history || []).forEach((move, idx) => {
-    if (move.action) return; // skip pass/exchange rows
     const tr = document.createElement('tr');
     const playerClass = move.player === 'human' ? 'player-human' : 'player-ai';
     const playerLabel = move.player === 'human' ? '👤 Human' : '🤖 AI';
+    let wordsText, scoreText;
+    if (move.action === 'pass') {
+      wordsText = '<em>Pass</em>';
+      scoreText = '—';
+    } else if (move.action === 'exchange') {
+      wordsText = '<em>Exchange</em>';
+      scoreText = '—';
+    } else if (move.action === 'challenge_failed') {
+      wordsText = `<em>Challenge "${move.word}" failed</em>`;
+      scoreText = '—';
+    } else if (move.action === 'challenge_succeeded') {
+      wordsText = `<em>Challenge "${move.word}" succeeded</em>`;
+      scoreText = `+${move.points_awarded || 0}`;
+    } else {
+      wordsText = (move.words || []).join(', ');
+      scoreText = `+${move.score || 0}`;
+    }
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td class="${playerClass}">${playerLabel}</td>
-      <td>${(move.words || []).join(', ')}</td>
-      <td>+${move.score || 0}</td>
+      <td>${wordsText}</td>
+      <td>${scoreText}</td>
       <td>${(move.scores || {}).human ?? ''}</td>
       <td>${(move.scores || {}).ai ?? ''}</td>
     `;
@@ -183,6 +200,9 @@ function applyState(state) {
   // Challenge words
   updateChallengeableWords(state);
 
+  // Exchange rack
+  renderExchangeRack(state.racks.human);
+
   // Game over
   if (state.game_over) {
     const humanScore = state.scores.human;
@@ -234,6 +254,28 @@ socket.on('tile_cart_status', data => {
   console.log('Tile cart:', data);
 });
 
+/* ── Exchange rack (click-to-select) ────────────────────── */
+function renderExchangeRack(tiles) {
+  const container = el('exchangeRack');
+  container.innerHTML = '';
+  exchangeSelected = new Map();  // index → letter
+  (tiles || []).forEach((letter, idx) => {
+    const t = document.createElement('span');
+    t.classList.add('tile', 'exchange-tile');
+    t.textContent = letter === ' ' ? '?' : letter;
+    t.dataset.index = idx;
+    t.onclick = () => {
+      t.classList.toggle('selected');
+      if (t.classList.contains('selected')) {
+        exchangeSelected.set(idx, letter);
+      } else {
+        exchangeSelected.delete(idx);
+      }
+    };
+    container.appendChild(t);
+  });
+}
+
 /* ── User actions ───────────────────────────────────────── */
 function placeTiles() {
   const text  = el('tilesInput').value.trim();
@@ -253,6 +295,20 @@ function passTurn() {
   fetch('/api/pass', { method: 'POST' })
     .then(r => r.json())
     .then(result => { if (!result.success) alert(result.error); });
+}
+
+function exchangeTiles() {
+  if (!exchangeSelected.size) { alert('Select tiles to exchange first.'); return; }
+  fetch('/api/exchange', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ letters: Array.from(exchangeSelected.values()) }),
+  })
+    .then(r => r.json())
+    .then(result => {
+      if (!result.success) alert('Exchange failed: ' + result.error);
+      else fetch('/api/state').then(r => r.json()).then(applyState).catch(() => {});
+    });
 }
 
 function challengeWord() {
