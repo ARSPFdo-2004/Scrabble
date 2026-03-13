@@ -7,14 +7,13 @@ needing a running server or real hardware.
 
 import sys
 import os
-import json
 
 # Ensure simulate mode and backend is importable
 os.environ["SIMULATE"] = "true"
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 import pytest
-from app import app, game, socketio
+from app import app
 from constants import CENTER, PLAYER_HUMAN, PLAYER_AI
 from game_engine import GameEngine
 
