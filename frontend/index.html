@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scrabble Live Score</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>🎲 Scrabble Live Score</h1>
+      <div class="connection-status" id="connectionStatus">Connecting…</div>
+    </header>
+
+    <!-- Score panel -->
+    <section class="score-panel">
+      <div class="score-card" id="humanScoreCard">
+        <div class="player-label">👤 Human</div>
+        <div class="score" id="humanScore">0</div>
+        <div class="rack-label">Rack</div>
+        <div class="rack" id="humanRack"></div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="score-card" id="aiScoreCard">
+        <div class="player-label">🤖 AI</div>
+        <div class="score" id="aiScore">0</div>
+        <div class="rack-label">Tiles</div>
+        <div class="rack" id="aiRack"></div>
+      </div>
+    </section>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span id="currentTurn">Waiting for game state…</span>
+      <span class="tiles-remaining" id="tilesRemaining"></span>
+    </div>
+
+    <!-- Main content: board + camera + controls -->
+    <div class="main-content">
+
+      <!-- Scrabble board -->
+      <div class="board-wrapper">
+        <h2>Board</h2>
+        <div class="board" id="board"></div>
+      </div>
+
+      <!-- Camera feed -->
+      <div class="camera-wrapper">
+        <h2>Camera Feed</h2>
+        <img id="cameraFeed" src="/video_feed" alt="Camera Feed" />
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-panel">
+
+      <!-- Human move entry -->
+      <div class="control-card">
+        <h3>Place Tiles (Manual)</h3>
+        <p class="hint">Format: row,col,letter – one per line</p>
+        <textarea id="tilesInput" rows="5" placeholder="7,7,H&#10;7,8,I&#10;7,9,T"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="placeTiles()">Place</button>
+          <button class="btn btn-secondary" onclick="passTurn()">Pass</button>
+        </div>
+      </div>
+
+      <!-- Challenge panel -->
+      <div class="control-card">
+        <h3>Challenge a Word</h3>
+        <p class="hint">Select a word placed by the AI and challenge it.</p>
+        <div class="challengeable-words" id="challengeableWords"></div>
+        <div class="btn-row">
+          <input type="text" id="challengeInput" placeholder="Enter word to challenge" />
+          <button class="btn btn-danger" onclick="challengeWord()">Challenge</button>
+        </div>
+        <div class="challenge-result" id="challengeResult"></div>
+      </div>
+
+      <!-- New game -->
+      <div class="control-card">
+        <h3>Game Controls</h3>
+        <button class="btn btn-warning" onclick="newGame()">New Game</button>
+        <button class="btn btn-secondary" onclick="scanBoard()">Scan Board</button>
+      </div>
+
+    </div>
+
+    <!-- Move history -->
+    <div class="history-panel">
+      <h3>Move History</h3>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Player</th><th>Words</th><th>Score</th>
+            <th>Human Total</th><th>AI Total</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Game over overlay -->
+    <div class="overlay" id="gameOverOverlay" style="display:none">
+      <div class="overlay-content">
+        <h2>🏆 Game Over!</h2>
+        <p id="gameOverMessage"></p>
+        <button class="btn btn-primary" onclick="newGame()">Play Again</button>
+      </div>
+    </div>
+
+  </div><!-- .app -->
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
